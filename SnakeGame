@@ -1,0 +1,175 @@
+package Game;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.Timer ;
+
+import Object.apple;
+import Object.snake;
+
+@SuppressWarnings("serial")
+public class SnakeGame extends JPanel implements ActionListener {
+
+ public static final int SCALE = 22;
+ public static final int WIDTH = 20;
+ public static final int HEIGHT = 20;
+ public static final int SPEED = 5;
+
+
+ apple a = new apple((int)(Math.random()*WIDTH),(int)(Math.random()*HEIGHT));
+ snake s = new snake(10, 10, 9, 10);
+ Timer t = new Timer(1000/SPEED, this);
+
+ public SnakeGame(){
+ t.start();
+ addKeyListener (new Keyboard());
+ setFocusable(true); 
+
+ }
+
+ public void paint(Graphics g){
+//цвет фона
+ g.setColor(color(15, 50, 110));
+ g.fillRect(0, 0, WIDTH*SCALE, HEIGHT*SCALE);
+
+ for(int xx = 0; xx <= WIDTH*SCALE; xx += SCALE){
+ g.drawLine(xx, 0, xx, HEIGHT*SCALE);
+ }
+ for(int yy = 0; yy <= HEIGHT*SCALE; yy += SCALE){
+ g.drawLine(0, yy, WIDTH*SCALE, yy);
+ }
+//цвет змейки
+ for(int d = 0; d < s.length; d++){
+ g.setColor(color(100, 150, 0));
+ g.fillRect(s.snakeX[d]*SCALE+1, s.snakeY[d]*SCALE+1, SCALE-1, SCALE-1);
+ }
+//цвет яблока
+ g.setColor(color(255,30,10));
+ g.fillRect(a.posX*SCALE+1, a.posY*SCALE+1, SCALE-1, SCALE-1);
+ } 
+
+ public Color color(int red, int green, int blue){
+ return new Color(red, green, blue);
+ }
+
+ public static void main(String[] args) {
+ JFrame f = new JFrame();
+ f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+ f.setResizable(false);
+ f.setSize(WIDTH*SCALE+7, HEIGHT*SCALE+30);
+ f.setLocationRelativeTo(null);
+ f.add(new SnakeGame());
+ f.setVisible(true);
+ }
+
+ public void actionPerformed(ActionEvent arg0) {
+ s.move();
+ if((s.snakeX[0] == a.posX)&(s.snakeY[0] == a.posY)){
+	 a.setRandomPosition();
+	 s.length++;
+ }
+ for(int k = 1; k < s.length; k++){
+ if((s.snakeX[k] == a.posX)&(s.snakeY[k] == a.posY)){
+	 a.setRandomPosition();
+	 }
+ }
+ repaint();
+ }
+
+ private class Keyboard extends KeyAdapter{
+ public void keyPressed(KeyEvent kEvt){
+ int key = kEvt.getKeyCode();
+
+ if((key == KeyEvent.VK_RIGHT)& s.direction !=2) s.direction = 0;
+ if((key == KeyEvent.VK_DOWN)& s.direction !=3) s.direction = 1;
+ if((key == KeyEvent.VK_LEFT)& s.direction !=0) s.direction = 2;
+ if((key == KeyEvent.VK_UP)& s.direction !=1) s.direction = 3;
+ }
+ }
+} 
+
+
+
+
+package Object;
+
+import Game.SnakeGame;
+
+public class snake {
+	 SnakeGame main;
+
+	 public int direction = 0;
+	 public int length = 1;
+
+	 @SuppressWarnings("static-access")
+	 public int snakeX[] = new int[main.WIDTH*main.HEIGHT];
+	 @SuppressWarnings("static-access")
+	 public int snakeY[] = new int[main.WIDTH*main.HEIGHT];
+
+	 public snake(int x0, int y0, int x1, int y1){
+	 snakeX[0] = x0;
+	 snakeY[0] = y0;
+	 snakeX[1] = x1;
+	 snakeY[1] = y1;
+	 }
+
+	 @SuppressWarnings("static-access")
+	 public void move(){
+
+	 for(int d = length; d > 0; d--){
+	 snakeX[d] = snakeX[d-1];
+	 snakeY[d] = snakeY[d-1];
+	 }
+
+	 if(direction == 0) snakeX[0]++;
+	 if(direction == 1) snakeY[0]++;
+	 if(direction == 2) snakeX[0]--;
+	 if(direction == 3) snakeY[0]--;
+
+	 for (int d = length - 1;d > 0; d-- ){
+	 if ((snakeX[0] == snakeX[d]) & (snakeY[0] == snakeY[d])) length = d-2;
+
+	 }
+	 if(snakeX[0] > main.WIDTH-1) snakeX[0] = 0;
+	 if(snakeX[0] < 0) snakeX[0] = main.WIDTH-1;
+	 if(snakeY[0] > main.HEIGHT-1) snakeY[0] = 0;
+	 if(snakeY[0] < 0) snakeY[0] = main.HEIGHT-1;
+
+	 if(length < 1) length = 1;
+
+	 }
+	} 
+
+
+
+
+package Object;
+
+import Game.SnakeGame;
+
+public class apple {
+
+ SnakeGame main;
+
+ public int posX;
+ public int posY;
+
+ public apple(int startX, int startY){
+ posX = startX;
+ posY = startY; 
+ }
+
+ @SuppressWarnings("static-access")
+ public void setRandomPosition(){
+ posX = (int)(Math.random()*main.WIDTH);
+ posY = (int)(Math.random()*main.WIDTH);
+ }
+
+}
